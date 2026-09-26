@@ -75,3 +75,4 @@ SSO_AUTO_CREATE=false
 # über mehrere Instanzen hinweg gelten soll (erzeugen mit:
 #   python3 -c "import secrets;print(secrets.token_hex(32))" ).
 ISMS_SECRET_KEY=
+GUNICORN_CMD_ARGS=--workers 4 --worker-class gthread --threads 8
