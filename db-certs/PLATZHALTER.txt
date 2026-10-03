@@ -1,0 +1,6 @@
+Nur relevant für eine externe Datenbank mit TLS (DB_SSL_MODE in der .env).
+Hier z. B. ablegen:
+  db-ca.pem        CA-Zertifikat des DB-Servers  -> DB_SSL_CA=/var/www/isms/db-certs/db-ca.pem
+  client-cert.pem  optional, Client-Zertifikat   -> DB_SSL_CERT=/var/www/isms/db-certs/client-cert.pem
+  client-key.pem   optional, Schlüssel dazu      -> DB_SSL_KEY=/var/www/isms/db-certs/client-key.pem
+Der Ordner wird schreibgeschützt in App- und Cron-Container eingebunden.

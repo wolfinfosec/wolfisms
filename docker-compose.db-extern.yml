@@ -1,0 +1,15 @@
+# ============================================================
+#  WolfISMS – externe Datenbank (DB_MODUS=extern)
+#  Eingebunden von docker-compose.yml. Es läuft KEIN DB-Container.
+#  App und Cron verbinden sich mit DB_HOST/DB_PORT aus der .env.
+#
+#  Der Dienst "db" ist nur als abgeschalteter Platzhalter definiert:
+#  "depends_on … required: false" in docker-compose.yml darf laut Compose
+#  nur auf einen abgeschalteten, nicht auf einen fehlenden Dienst zeigen.
+#  Das Profil "nie-starten" bitte nicht in COMPOSE_PROFILES eintragen.
+# ============================================================
+services:
+
+  db:
+    image: mariadb:11.4
+    profiles: ["nie-starten"]

@@ -5,28 +5,16 @@
 #    - Ohne customer.lic startet die App im Einzelusermodus.
 #    - Der Lizenz-Upload im Admin-Bereich legt customer.lic dauerhaft ab.
 #    - license-init kopiert license_public.pem beim ersten Start aus dem Image.
+#  Datenbank: DB_MODUS in der .env wählt die eingebundene Datei
+#    docker-compose.db-<DB_MODUS>.yml:
+#      intern (Standard, auch wenn DB_MODUS fehlt) - MariaDB-Container "db"
+#      extern  - kein DB-Container, DB_HOST/DB_PORT zeigen auf den Server
+#    "include" und "depends_on.required" brauchen Docker Compose >= 2.20.
 # ============================================================
-services:
+include:
+  - docker-compose.db-${DB_MODUS:-intern}.yml
 
-  db:
-    image: mariadb:11.4
-    restart: unless-stopped
-    environment:
-      MARIADB_DATABASE: ${DB_NAME}
-      MARIADB_USER: ${DB_USER}
-      MARIADB_PASSWORD: "${DB_PASSWORD:?DB_PASSWORD fehlt in der .env}"
-      MARIADB_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD fehlt in der .env}"
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./db-init:/docker-entrypoint-initdb.d:ro
-    networks:
-      - default
-    healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-      start_period: 30s
+services:
 
   # Einmaliger Init-Lauf: stellt sicher, dass license_public.pem im
   # Host-Verzeichnis ./license liegt (der Verzeichnis-Mount überdeckt
@@ -43,14 +31,18 @@ services:
     image: ${WOLFISMS_IMAGE:-wolfschuster/wolfisms:release}
     restart: unless-stopped
     depends_on:
+      # required: false – bei DB_MODUS=extern ist "db" abgeschaltet,
+      # die Abhängigkeit entfällt dann.
       db:
         condition: service_healthy
+        required: false
       license-init:
         condition: service_completed_successfully
     env_file:
       - .env
     environment:
-      DB_HOST: db
+      # Leer bzw. nicht gesetzt = interner Container "db".
+      DB_HOST: ${DB_HOST:-db}
       WOLFISMS_CONTAINER: "1"
     volumes:
       # Lizenzverzeichnis dieser Umgebung (customer.lic + license_public.pem):
@@ -64,6 +56,9 @@ services:
       # ohne Volume liegt es nur in der Container-Schicht und ist nach jedem
       # Image-Update wieder auf die Auslieferungs-Defaults zurueckgesetzt:
       - branding:/var/www/isms/branding
+      # CA-/Client-Zertifikate für eine externe DB mit TLS (DB_SSL_CA …),
+      # getrennt von ./certs, das Schlüssel des Eigen-TLS-Modus enthält:
+      - ./db-certs:/var/www/isms/db-certs:ro
     ports:
       - "0.0.0.0:8080:8000"
     networks:
@@ -76,17 +71,22 @@ services:
     image: ${WOLFISMS_IMAGE:-wolfschuster/wolfisms:release}
     restart: unless-stopped
     depends_on:
+      # required: false – bei DB_MODUS=extern ist "db" abgeschaltet,
+      # die Abhängigkeit entfällt dann.
       db:
         condition: service_healthy
+        required: false
       license-init:
         condition: service_completed_successfully
     env_file:
       - .env
     environment:
-      DB_HOST: db
+      # Leer bzw. nicht gesetzt = interner Container "db".
+      DB_HOST: ${DB_HOST:-db}
       WOLFISMS_CONTAINER: "1"
     volumes:
       - ./license:/var/www/isms/license:ro
+      - ./db-certs:/var/www/isms/db-certs:ro
     entrypoint: ["/usr/local/bin/wolfisms-cron-entry.sh"]
     command: []
     networks:
@@ -101,7 +101,6 @@ networks:
     name: proxy
 
 volumes:
-  db_data:
   uploads:
   sessions:
   branding:

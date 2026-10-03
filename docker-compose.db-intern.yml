@@ -1,0 +1,29 @@
+# ============================================================
+#  WolfISMS – interne Datenbank (DB_MODUS=intern, Standard)
+#  Eingebunden von docker-compose.yml. MariaDB läuft als Container "db"
+#  im Stack; App und Cron erreichen ihn über DB_HOST=db (Vorgabe).
+# ============================================================
+services:
+
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: "${DB_PASSWORD:?DB_PASSWORD fehlt in der .env}"
+      MARIADB_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD fehlt in der .env}"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+volumes:
+  db_data:

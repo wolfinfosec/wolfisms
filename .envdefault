@@ -17,16 +17,58 @@ WEBPATH=https://isms.deine-domain.tld
 
 WOLFISMS_IMAGE=wolfschuster/wolfisms:release
 
-# --- Datenbank (Container) ---
-# Der DB-Container legt den User "isms" selbst an. Das DUMP enthält nur
-# Daten/Schema, NICHT die MySQL-Benutzer – deshalb hier frei wählbar.
-# Wichtig: DB_PASSWORD (App) == MARIADB_PASSWORD (DB), was hier automatisch
-# passt, weil beide dieselbe Variable lesen.
-# ANPASSEN: beide Passwörter setzen (erzeugen z. B. mit "openssl rand -hex 24").
+# --- Datenbank ---
+# DB_MODUS wählt die Betriebsart (fehlt der Eintrag, gilt "intern"):
+#
+#  intern  MariaDB läuft als Container "db" im Stack, DB_HOST bleibt leer.
+#          Der Container legt Datenbank und User beim ersten Start selbst an
+#          (ein Dump in ./db-init wird dabei eingespielt). Das Dump enthält nur
+#          Daten/Schema, NICHT die MySQL-Benutzer – Name/Passwort frei wählbar.
+#
+#  extern  Es startet KEIN DB-Container. DB_HOST/DB_PORT zeigen auf den
+#          externen Server; Datenbank DB_NAME und User DB_USER müssen dort
+#          bereits existieren, z. B.:
+#            CREATE DATABASE isms CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+#            CREATE USER 'isms'@'%' IDENTIFIED BY '…';
+#            GRANT ALL PRIVILEGES ON isms.* TO 'isms'@'%';
+#          Bestehende Daten vorher per Dump auf den Server übertragen.
+#          Das Backup im Admin-Bereich (mariadb-dump --routines) braucht
+#          Leserechte auf die Routinen; DB_ROOT_PASSWORD wird nicht benutzt.
+#
+# Wechsel einer laufenden Umgebung: erst "docker compose down" (Daten im
+# Volume db_data bleiben erhalten), dann DB_MODUS ändern, dann
+# "docker compose up -d".
+DB_MODUS=intern
+
+# Datenbanktyp: mariadb (Standard) oder mysql. Vorgesehen für spätere
+# Versionen: mssql – wird derzeit beim Start mit einer Meldung abgelehnt.
+DB_TYPE=mariadb
+
+# Leer = interner Container "db". Bei extern: Hostname oder IP des DB-Servers.
+DB_HOST=
+# Leer = Standardport des Typs (MariaDB/MySQL: 3306).
+DB_PORT=
+
+# ANPASSEN: Passwort setzen (erzeugen z. B. mit "openssl rand -hex 24").
+# Bei intern gilt es für App UND DB-Container (beide lesen dieselbe Variable),
+# bei extern ist es das Passwort des Users auf dem externen Server.
 DB_NAME=isms
 DB_USER=isms
 DB_PASSWORD=
+# ANPASSEN bei intern: root-Passwort des DB-Containers. Bei extern ungenutzt.
 DB_ROOT_PASSWORD=
+
+# TLS zur Datenbank (vor allem bei extern):
+#   leer         Verhalten von Treiber/Client unverändert
+#   disabled     ohne TLS
+#   required     TLS erzwingen, Zertifikat nicht prüfen
+#   verify-full  TLS, Zertifikat und Hostname gegen DB_SSL_CA prüfen
+# Zertifikate nach ./db-certs legen; im Container: /var/www/isms/db-certs/…
+DB_SSL_MODE=
+DB_SSL_CA=
+# Optional, nur wenn der Server Client-Zertifikate verlangt:
+DB_SSL_CERT=
+DB_SSL_KEY=
 
 # --- Sprache ---
 ENGLISCH=true
