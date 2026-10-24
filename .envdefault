@@ -15,7 +15,7 @@ PROXY_ALIAS=
 # verschicken Aufgaben- und Dokumenten-Mails Links ohne Hostnamen.
 WEBPATH=https://isms.deine-domain.tld
 
-WOLFISMS_IMAGE=wolfschuster/wolfisms:release
+WOLFISMS_IMAGE=wolfinfosecgmbh/wolfisms:release
 
 # --- Datenbank ---
 # DB_MODUS wählt die Betriebsart (fehlt der Eintrag, gilt "intern"):
