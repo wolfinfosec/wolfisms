@@ -1,6 +1,7 @@
 # ============================================================
 #  WolfISMS-Stack – Betrieb hinter dem NPM-Container (gemeinsames Netz)
-#  Kein veröffentlichter App-Port. NPM erreicht die App über ${PROXY_ALIAS}.
+#  NPM erreicht die App über ${PROXY_ALIAS}. Ein fester Host-Port ist
+#  optional (WOLFISMS_HOST_PORT in der .env).
 #  Lizenz: ./license wird als Verzeichnis gemountet (Daten je Umgebung).
 #    - Ohne customer.lic startet die App im Einzelusermodus.
 #    - Der Lizenz-Upload im Admin-Bereich legt customer.lic dauerhaft ab.
@@ -59,8 +60,11 @@ services:
       # CA-/Client-Zertifikate für eine externe DB mit TLS (DB_SSL_CA …),
       # getrennt von ./certs, das Schlüssel des Eigen-TLS-Modus enthält:
       - ./db-certs:/var/www/isms/db-certs:ro
+    # Direkter Zugang ohne NPM (optional). Ohne WOLFISMS_HOST_PORT in der .env
+    # vergibt Docker einen freien Port auf 127.0.0.1 – so kollidieren mehrere
+    # Umgebungen auf einem Host nicht. Anzeigen: docker compose port app 8000
     ports:
-      - "0.0.0.0:8080:8000"
+      - "${WOLFISMS_HOST_BIND:-127.0.0.1}:${WOLFISMS_HOST_PORT:-}:8000"
     networks:
       default: {}
       proxy:

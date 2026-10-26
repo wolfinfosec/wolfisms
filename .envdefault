@@ -15,6 +15,13 @@ PROXY_ALIAS=
 # verschicken Aufgaben- und Dokumenten-Mails Links ohne Hostnamen.
 WEBPATH=https://isms.deine-domain.tld
 
+# Optional: fester Host-Port für den direkten Zugang ohne NPM. Leer lassen,
+# wenn mehrere Umgebungen auf demselben Host laufen – dann vergibt Docker
+# einen freien Port (nur 127.0.0.1). Jeder feste Port darf je Host nur
+# einmal vorkommen. WOLFISMS_HOST_BIND=0.0.0.0 macht ihn von außen erreichbar.
+WOLFISMS_HOST_PORT=
+WOLFISMS_HOST_BIND=127.0.0.1
+
 WOLFISMS_IMAGE=wolfinfosecgmbh/wolfisms:release
 
 # --- Datenbank ---
