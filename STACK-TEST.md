@@ -113,8 +113,8 @@ docker compose down -v         # ALLES weg inkl. DB-Volume (Dump wird neu einges
 
 ## Was Sie NICHT erwarten sollten
 
-`http://DOCKER-HOST:8000` im Browser: Es gibt keinen veröffentlichten Port,
-die Adresse antwortet nicht. Und selbst über NPM geht der Login erst durch,
+`http://DOCKER-HOST:8000` im Browser: Der Host-Port hängt nur an 127.0.0.1,
+von außen antwortet die Adresse nicht. Und selbst über NPM geht der Login erst durch,
 wenn dort HTTPS aktiv ist – `SESSION_COOKIE_SECURE=True` verlangt es. Für
 diesen Test zählt nur der 200er aus dem Container.
 

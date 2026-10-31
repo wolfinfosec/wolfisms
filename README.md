@@ -12,8 +12,6 @@ cp .envdefault .env
 
 `.env` bearbeiten und Werte anpassen.
 
-Falls benötigt, Zertifikate nach `certs/` kopieren.
-
 ```bash
 docker compose up -d
 ```
@@ -22,7 +20,20 @@ docker compose up -d
 
 - Docker
 - Docker Compose
-- NPM als Docker
+- NPM als Docker (siehe `NPM.md`)
+
+## Zugriff nur über den Reverse-Proxy
+
+Der Container spricht ausschließlich HTTP auf Port 8000. HTTPS terminiert
+der Nginx Proxy Manager; ein anderer Reverse-Proxy (Traefik, Apache, IIS …)
+geht ebenso, solange er TLS terminiert und `X-Forwarded-For`/`-Proto`
+setzt. HTTPS ist Pflicht: die Session-Cookies sind `Secure`, über reines
+HTTP schlägt die Anmeldung fehl. `WEBPATH` muss deshalb mit `https://`
+beginnen.
+
+Der Host-Port der App hängt fest an `127.0.0.1` und dient nur der Diagnose
+auf dem Docker-Host. Stehen zwei Proxys hintereinander (z. B. Cloudflare vor
+NPM), `ISMS_PROXY_HOPS=2` in der `.env` setzen.
 
 
 ## Externe Datenbank
